@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(Cube))]
 public class Cube : MonoBehaviour
 {
     private const string Color = "_Color";
@@ -30,6 +31,21 @@ public class Cube : MonoBehaviour
         renderer.material.SetColor(Color, _color);
     }
 
+    private void OnMouseUpAsButton()
+    {
+        if (GetExplodeStatus())
+        {
+            _cubeGenerator.GenerateCubes(this);
+            Instantiate(_effect, transform.position, transform.rotation);
+            Destroy(gameObject);
+            Explode();
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
     public void SetParentParams(Guid id, float chanceToSeparate, CubeGenerator cubeGenerator)
     {
         _chanceToSeparate = chanceToSeparate;
@@ -37,28 +53,11 @@ public class Cube : MonoBehaviour
         _cubeGenerator = cubeGenerator;
     }
 
-    private void OnMouseUpAsButton()
-    {
-        if (GetExplodeStatus())
-        {
-            Explode();
-            Instantiate(_effect, transform.position, transform.rotation);
-            Destroy(gameObject);
-        }
-        else
-        {
-            _cubeGenerator.GenerateCubes(this);
-            Destroy(gameObject);
-        }
-    }
-
     private bool GetExplodeStatus()
     {
         int randomChance = UnityEngine.Random.Range(_minChancePercent, _maxChancePercent);
-        Debug.Log(randomChance);
-        Debug.Log(_chanceToSeparate);
-        Debug.Log(randomChance > _chanceToSeparate);
-        return randomChance > _chanceToSeparate;
+
+        return randomChance < _chanceToSeparate;
     }
 
     private void Explode()
