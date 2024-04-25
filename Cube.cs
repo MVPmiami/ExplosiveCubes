@@ -16,6 +16,8 @@ public class Cube : MonoBehaviour
     private int _minChancePercent;
     private int _maxChancePercent;
     private Guid _id;
+    private CubeGenerator _cubeGenerator;
+    private Action<Cube> _cubeSeparated;
 
     public float ChanceToSeparate => _chanceToSeparate;
     public Guid ID => _id;
@@ -27,6 +29,7 @@ public class Cube : MonoBehaviour
         renderer = GetComponent<Renderer>();
         _color = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), 1f);
         renderer.material.SetColor(Color, _color);
+        _cubeSeparated = _cubeGenerator.GenerateCubes;
     }
 
     private void OnMouseUpAsButton()
@@ -39,10 +42,7 @@ public class Cube : MonoBehaviour
         }
         else
         {
-            if (SeparateToCubes != null)
-                SeparateToCubes(this);
-
-
+            _cubeSeparated?.Invoke(this);
             Destroy(gameObject);
         }
     }
@@ -51,7 +51,7 @@ public class Cube : MonoBehaviour
     {
         int randomChance = UnityEngine.Random.Range(_minChancePercent, _maxChancePercent);
 
-        return randomChance > _chanceToSeparate ? true : false;
+        return randomChance > _chanceToSeparate;
     }
 
     private void Explode()
@@ -75,7 +75,6 @@ public class Cube : MonoBehaviour
 
                 if (cube != null && cube.ID == _id)
                     cubes.Add(rigidbody);
-
             }
         }
 
@@ -92,7 +91,8 @@ public class Cube : MonoBehaviour
         _id = id;
     }
 
-    public delegate void CubeSeparated(Cube cube);
-
-    public static event CubeSeparated SeparateToCubes;
+    public void SetCubeGenerator(CubeGenerator cubeGenerator)
+    {
+        _cubeGenerator = cubeGenerator;
+    }
 }

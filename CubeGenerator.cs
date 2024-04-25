@@ -7,13 +7,14 @@ public class CubeGenerator : MonoBehaviour
 
     private int _minCubeCount;
     private int _maxCubeCount;
+    private float _reductionFactor;
 
     private void Start()
     {
         _minCubeCount = 2;
         _maxCubeCount = 7;
+        _reductionFactor = 0.5f;
 
-        Cube.SeparateToCubes += GenerateCubes;
         InitGenerateCubes();
     }
 
@@ -26,26 +27,22 @@ public class CubeGenerator : MonoBehaviour
             Cube cube = Instantiate(_cubePrefub, cubePosition, Quaternion.identity);
             cube.SetChanceToSeparate(100f);
             cube.SetID(Guid.NewGuid());
+            cube.SetCubeGenerator(this);
         }
-    }
-
-    private void OnDestroy()
-    {
-        Cube.SeparateToCubes -= GenerateCubes;
     }
 
     public void GenerateCubes(Cube cube)
     {
         int cubeCount = UnityEngine.Random.Range(_minCubeCount, _maxCubeCount);
-        Vector3 size = new Vector3(cube.transform.localScale.x / 2f, cube.transform.localScale.y / 2f, cube.transform.localScale.z / 2f);
-
+        
         for (int i = 0; i < cubeCount; i++)
         {
             Cube newCubeObject = Instantiate(_cubePrefub, cube.transform.position, Quaternion.identity);
             Cube newCube = newCubeObject.GetComponent<Cube>();
-            newCube.SetChanceToSeparate(cube.ChanceToSeparate / 2f);
+            newCube.SetChanceToSeparate(cube.ChanceToSeparate / _reductionFactor);
             newCube.SetID(cube.ID);
-            newCubeObject.transform.localScale = size;
+            newCube.SetCubeGenerator(this);
+            newCube.transform.localScale = Vector3.Scale(cube.transform.localScale, new Vector3(_reductionFactor, _reductionFactor, _reductionFactor));
         }
     }
 }
