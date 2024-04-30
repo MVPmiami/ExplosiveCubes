@@ -17,10 +17,10 @@ public class Cube : MonoBehaviour
     private int _minChancePercent;
     private int _maxChancePercent;
     private Guid _id;
-    private CubeGenerator _cubeGenerator;
 
     public float ChanceToSeparate => _chanceToSeparate;
     public Guid ID => _id;
+    public event Action<Cube> CubeExploded;
 
     private void Start()
     {
@@ -35,7 +35,7 @@ public class Cube : MonoBehaviour
     {
         if (GetExplodeStatus())
         {
-            _cubeGenerator.GenerateCubes(this);
+            CubeExploded?.Invoke(this);
             Instantiate(_effect, transform.position, transform.rotation);
             Destroy(gameObject);
             Explode();
@@ -46,11 +46,10 @@ public class Cube : MonoBehaviour
         }
     }
 
-    public void SetParentParams(Guid id, float chanceToSeparate, CubeGenerator cubeGenerator)
+    public void SetParentParams(Guid id, float chanceToSeparate)
     {
         _chanceToSeparate = chanceToSeparate;
         _id = id;
-        _cubeGenerator = cubeGenerator;
     }
 
     private bool GetExplodeStatus()

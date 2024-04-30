@@ -20,15 +20,16 @@ public class CubeGenerator : MonoBehaviour
         InitCubes();
     }
 
-    public void GenerateCubes(Cube cube)
+    private void GenerateCubes(Cube cube)
     {
         int cubeCount = UnityEngine.Random.Range(_minCubeCount, _maxCubeCount);
 
         for (int i = 0; i < cubeCount; i++)
         {
             Cube newCube = Instantiate(_cubePrefub, cube.transform.position, Quaternion.identity);
-            newCube.SetParentParams(cube.ID, cube.ChanceToSeparate / _reductionSeparateFactor, this);
+            newCube.SetParentParams(cube.ID, cube.ChanceToSeparate / _reductionSeparateFactor);
             newCube.transform.localScale = Vector3.Scale(cube.transform.localScale, new Vector3(_reductionFactor, _reductionFactor, _reductionFactor));
+            newCube.CubeExploded += GenerateCubes;
         }
     }
 
@@ -39,7 +40,8 @@ public class CubeGenerator : MonoBehaviour
         foreach (var cubePosition in startCubePositions)
         {
             Cube cube = Instantiate(_cubePrefub, cubePosition, Quaternion.identity);
-            cube.SetParentParams(Guid.NewGuid(), 100f, this);
+            cube.SetParentParams(Guid.NewGuid(), 100f);
+            cube.CubeExploded += GenerateCubes;
         }
     }
 }
