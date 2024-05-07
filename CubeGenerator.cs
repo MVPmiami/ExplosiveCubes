@@ -9,9 +9,15 @@ public class CubeGenerator : MonoBehaviour
     private int _maxCubeCount;
     private float _reductionFactor;
     private float _reductionSeparateFactor;
+    private float _initCubeSeparateChance;
+    private float _initExplosionRadius;
+    private float _initExplosionForce;
 
     private void Start()
     {
+        _initCubeSeparateChance = 100;
+        _initExplosionRadius = 5;
+        _initExplosionForce = 250;
         _minCubeCount = 2;
         _maxCubeCount = 7;
         _reductionFactor = 0.5f;
@@ -27,7 +33,7 @@ public class CubeGenerator : MonoBehaviour
         for (int i = 0; i < cubeCount; i++)
         {
             Cube newCube = Instantiate(_cubePrefub, cube.transform.position, Quaternion.identity);
-            newCube.SetParentParams(cube.ID, cube.ChanceToSeparate / _reductionSeparateFactor);
+            newCube.SetParentParams(cube.ID, cube.ChanceToSeparate / _reductionSeparateFactor, cube.ExplosionRadius * _reductionSeparateFactor, cube.ExplosionForce * _reductionSeparateFactor);
             newCube.transform.localScale = Vector3.Scale(cube.transform.localScale, new Vector3(_reductionFactor, _reductionFactor, _reductionFactor));
             newCube.CubeExploded += GenerateCubes;
         }
@@ -40,7 +46,7 @@ public class CubeGenerator : MonoBehaviour
         foreach (var cubePosition in startCubePositions)
         {
             Cube cube = Instantiate(_cubePrefub, cubePosition, Quaternion.identity);
-            cube.SetParentParams(Guid.NewGuid(), 100f);
+            cube.SetParentParams(Guid.NewGuid(), _initCubeSeparateChance, _initExplosionRadius, _initExplosionForce);
             cube.CubeExploded += GenerateCubes;
         }
     }

@@ -7,11 +7,11 @@ public class Cube : MonoBehaviour
 {
     private const string Color = "_Color";
 
-    [SerializeField] private float _explosionRadius;
-    [SerializeField] private float _explosionForce;
     [SerializeField] private ParticleSystem _effect;
 
-    private Renderer renderer;
+    private float _explosionRadius;
+    private float _explosionForce;
+    private Renderer _renderer;
     private Color _color;
     private float _chanceToSeparate;
     private int _minChancePercent;
@@ -21,42 +21,46 @@ public class Cube : MonoBehaviour
     public float ChanceToSeparate => _chanceToSeparate;
     public Guid ID => _id;
     public event Action<Cube> CubeExploded;
+    public float ExplosionRadius => _explosionRadius;
+    public float ExplosionForce => _explosionForce;
 
     private void Start()
     {
         _minChancePercent = 0;
         _maxChancePercent = 100;
-        renderer = GetComponent<Renderer>();
+        _renderer = GetComponent<Renderer>();
         _color = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), 1f);
-        renderer.material.SetColor(Color, _color);
+        _renderer.material.SetColor(Color, _color);
     }
 
     private void OnMouseUpAsButton()
     {
         if (GetExplodeStatus())
         {
-            CubeExploded?.Invoke(this);
             Instantiate(_effect, transform.position, transform.rotation);
             Destroy(gameObject);
             Explode();
         }
         else
         {
+            CubeExploded?.Invoke(this);
             Destroy(gameObject);
         }
     }
 
-    public void SetParentParams(Guid id, float chanceToSeparate)
+    public void SetParentParams(Guid id, float chanceToSeparate,float explosionRadius, float explosionForce)
     {
         _chanceToSeparate = chanceToSeparate;
         _id = id;
+        _explosionRadius = explosionRadius;
+        _explosionForce = explosionForce;
     }
 
     private bool GetExplodeStatus()
     {
         int randomChance = UnityEngine.Random.Range(_minChancePercent, _maxChancePercent);
 
-        return randomChance < _chanceToSeparate;
+        return randomChance > _chanceToSeparate;
     }
 
     private void Explode()
