@@ -1,31 +1,30 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(Cube))]
+[RequireComponent(typeof(Cube), typeof(Explode))]
 public class Cube : MonoBehaviour
 {
     private const string Color = "_Color";
 
     [SerializeField] private ParticleSystem _effect;
 
-    private float _explosionRadius;
-    private float _explosionForce;
+    private Explode _explode;
     private Renderer _renderer;
     private Color _color;
+    private float _explosionRadius;
+    private float _explosionForce;
     private float _chanceToSeparate;
     private int _minChancePercent;
     private int _maxChancePercent;
-    private Guid _id;
 
+    public event Action<Cube> CubeSeparated;
     public float ChanceToSeparate => _chanceToSeparate;
-    public Guid ID => _id;
-    public event Action<Cube> CubeExploded;
     public float ExplosionRadius => _explosionRadius;
     public float ExplosionForce => _explosionForce;
 
     private void Start()
     {
+        _explode = GetComponent<Explode>();
         _minChancePercent = 0;
         _maxChancePercent = 100;
         _renderer = GetComponent<Renderer>();
@@ -35,58 +34,30 @@ public class Cube : MonoBehaviour
 
     private void OnMouseUpAsButton()
     {
-        if (GetExplodeStatus())
+        if (EvaluateExplosivity())
         {
             Instantiate(_effect, transform.position, transform.rotation);
-            Destroy(gameObject);
-            Explode();
+            _explode?.InitExplode(this);
         }
         else
         {
-            CubeExploded?.Invoke(this);
-            Destroy(gameObject);
+            CubeSeparated?.Invoke(this);
         }
+
+        Destroy(gameObject);
     }
 
-    public void SetParentParams(Guid id, float chanceToSeparate,float explosionRadius, float explosionForce)
+    public void SetParentProperties(float chanceToSeparate, float explosionRadius, float explosionForce)
     {
         _chanceToSeparate = chanceToSeparate;
-        _id = id;
         _explosionRadius = explosionRadius;
         _explosionForce = explosionForce;
     }
 
-    private bool GetExplodeStatus()
+    private bool EvaluateExplosivity()
     {
         int randomChance = UnityEngine.Random.Range(_minChancePercent, _maxChancePercent);
 
         return randomChance > _chanceToSeparate;
-    }
-
-    private void Explode()
-    {
-        foreach (Rigidbody cube in GetExplodableObjects())
-            cube.AddExplosionForce(_explosionForce, transform.position, _explosionRadius);
-    }
-
-    private List<Rigidbody> GetExplodableObjects()
-    {
-        Collider[] hits = Physics.OverlapSphere(transform.position, _explosionRadius);
-        List<Rigidbody> cubes = new List<Rigidbody>();
-
-        foreach (Collider hit in hits)
-        {
-            Rigidbody rigidbody = hit.attachedRigidbody;
-
-            if (rigidbody != null)
-            {
-                Cube cube = rigidbody.GetComponent<Cube>();
-
-                if (cube != null && cube.ID == _id)
-                    cubes.Add(rigidbody);
-            }
-        }
-
-        return cubes;
     }
 }

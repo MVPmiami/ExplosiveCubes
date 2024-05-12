@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 public class CubeGenerator : MonoBehaviour
@@ -23,7 +22,7 @@ public class CubeGenerator : MonoBehaviour
         _reductionFactor = 0.5f;
         _reductionSeparateFactor = 2f;
 
-        InitCubes();
+        GenerateCubes();
     }
 
     private void GenerateCubes(Cube cube)
@@ -33,21 +32,21 @@ public class CubeGenerator : MonoBehaviour
         for (int i = 0; i < cubeCount; i++)
         {
             Cube newCube = Instantiate(_cubePrefub, cube.transform.position, Quaternion.identity);
-            newCube.SetParentParams(cube.ID, cube.ChanceToSeparate / _reductionSeparateFactor, cube.ExplosionRadius * _reductionSeparateFactor, cube.ExplosionForce * _reductionSeparateFactor);
+            newCube.SetParentProperties(cube.ChanceToSeparate / _reductionSeparateFactor, cube.ExplosionRadius * _reductionSeparateFactor, cube.ExplosionForce * _reductionSeparateFactor);
             newCube.transform.localScale = Vector3.Scale(cube.transform.localScale, new Vector3(_reductionFactor, _reductionFactor, _reductionFactor));
-            newCube.CubeExploded += GenerateCubes;
+            newCube.CubeSeparated += GenerateCubes;
         }
     }
 
-    private void InitCubes()
+    private void GenerateCubes()
     {
         Vector3[] startCubePositions = { new Vector3(-1.950885f, 1.5f, -3.99027f), new Vector3(1.245849f, 1.5f, -3.99027f) };
 
         foreach (var cubePosition in startCubePositions)
         {
             Cube cube = Instantiate(_cubePrefub, cubePosition, Quaternion.identity);
-            cube.SetParentParams(Guid.NewGuid(), _initCubeSeparateChance, _initExplosionRadius, _initExplosionForce);
-            cube.CubeExploded += GenerateCubes;
+            cube.SetParentProperties(_initCubeSeparateChance, _initExplosionRadius, _initExplosionForce);
+            cube.CubeSeparated += GenerateCubes;
         }
     }
 }
